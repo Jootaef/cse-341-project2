@@ -1,22 +1,39 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const bodyParser = require('body-parser');
+const swaggerUi = require("swagger-ui-express"); 
+const swaggerDocument = require("./swagger.json");
+const mongodb = require('./data/database');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+const PORT = process.env.PORT || 3001;
 
-// Routes
-const itemRoutes = require('./routes/itemRoutes');
-app.use('/api/items', itemRoutes);
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(process.env.PORT || 3000, () => {
-      console.log(`Server running on port ${process.env.PORT}`);
-    });
-  })
-  .catch(err => console.error('MongoDB connection error:', err));
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*"); gins
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+    next();
+});
+
+app.use(bodyParser.json());
+
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+
+app.use('/', require('./routes'));
+
+mongodb.initDb((err) => {
+    if (err) {
+        console.log(err);
+    } else {
+        app.listen(PORT, () => {
+            console.log(`Database is listening and Node.js server is running on port ${PORT}`);
+        });
+    }
+});

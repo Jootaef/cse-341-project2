@@ -9,7 +9,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
-
-  
+  "license": "ISC",
+  "dependencies": {
+    "swagger-ui-express": "^5.0.1"
+  }
 }
