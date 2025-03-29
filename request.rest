@@ -28,7 +28,7 @@ Content-Type: application/json
 
 {
     "productType": "dairy",
-    "productBrand": "Veneto",
+    "productBrand": "Venetooo",
     "productName": "Mangoo Yogurt",
     "weightPerUnit": 0.14,
     "pricePerUnit": 0.6,

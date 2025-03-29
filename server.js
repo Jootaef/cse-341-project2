@@ -12,14 +12,14 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Swagger Docs (accesible en /api/docs)
+// Swagger Docs (accessible at /api/docs)
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Rutas principales (todo empieza desde /api)
+// 👇 Main routes WITHOUT the /api prefix
 const mainRoutes = require('./routes');
-app.use('/api', mainRoutes);
+app.use('/', mainRoutes);
 
-// Conexión a la base de datos y ejecución del servidor
+// Connect to MongoDB and start server
 db.initDb((error) => {
   if (error) {
     console.error('❌ Failed to connect to MongoDB:', error);
