@@ -5,7 +5,7 @@
     "description": "RESTful API for managing items using Node.js and MongoDB. Created by Jaydan Valencia for the CSE 341 course project.",
     "version": "1.0.0"
   },
-  "host": "cse-341-project3-bc0r.onrender.com",
+  "host": "project2-2x55.onrender.com",
   "basePath": "/",
   "schemes": ["https"],
   "paths": {
