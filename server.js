@@ -1,39 +1,32 @@
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
-const swaggerUi = require("swagger-ui-express"); 
-const swaggerDocument = require("./swagger.json");
-const mongodb = require('./data/database');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger.json');
+const db = require('./data/database');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*"); gins
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(204);
-    }
-    next();
-});
-
+// Middleware
+app.use(cors());
 app.use(bodyParser.json());
 
+// Swagger Docs (accesible en /api/docs)
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Rutas principales (todo empieza desde /api)
+const mainRoutes = require('./routes');
+app.use('/api', mainRoutes);
 
-
-app.use('/', require('./routes'));
-
-mongodb.initDb((err) => {
-    if (err) {
-        console.log(err);
-    } else {
-        app.listen(PORT, () => {
-            console.log(`Database is listening and Node.js server is running on port ${PORT}`);
-        });
-    }
+// Conexión a la base de datos y ejecución del servidor
+db.initDb((error) => {
+  if (error) {
+    console.error('❌ Failed to connect to MongoDB:', error);
+  } else {
+    app.listen(PORT, () => {
+      console.log('✅ Connected to MongoDB');
+      console.log(`🚀 Server running at http://localhost:${PORT}`);
+    });
+  }
 });

@@ -1,0 +1,40 @@
+### ✅ Root Test (Should return "API is running.")
+GET http://localhost:3000/items
+
+### 📦 Get All Items
+GET http://localhost:3000/items
+
+### 🔍 Get a Single Item by ID
+GET http://localhost:3000/items/67e7808e9588887b156e135d
+
+### ➕ Create a New Item
+POST http://localhost:3000/items
+Content-Type: application/json
+
+{
+  "productType": "bakery",
+  "productBrand": "Bimbo",
+  "productName": "White Bread",
+  "weightPerUnit": 0.5,
+  "pricePerUnit": 1.20,
+  "sellingPrice": 2.00,
+  "expirationDate": "2025-04-05"
+}
+
+
+### ✏️ Update Existing Item
+PUT http://localhost:3000/items/67e7809e9588887b156e135e
+Content-Type: application/json
+
+{
+    "productType": "dairy",
+    "productBrand": "Veneto",
+    "productName": "Mangoo Yogurt",
+    "weightPerUnit": 0.14,
+    "pricePerUnit": 0.6,
+    "sellingPrice": 1.1,
+    "expirationDate": "2025-04-16"
+}
+
+### ❌ Delete an Item
+DELETE http://localhost:3000/items/67e780aa9588887b156e1361
