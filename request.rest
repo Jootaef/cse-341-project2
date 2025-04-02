@@ -55,11 +55,11 @@ POST http://localhost:3000/users
 Content-Type: application/json
 
 {
-  "firstName": "Jaydan",
-  "lastName": "Valencia",
-  "email": "jaydan@email.com",
-  "favoriteColor": "Blue",
-  "birthday": "2000-01-01"
+    "firstName": "Lucía",
+    "lastName": "Fernandez",
+    "email": "lucia.fernandez@example.com",
+    "favoriteColor": "Purple",
+    "birthday": "1995-12-01"
 }
 
 ### Update a user by ID
