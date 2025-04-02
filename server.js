@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -12,12 +13,21 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Swagger Docs (accessible at /api/docs)
+// Swagger UI (accessible at /api/docs)
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// 👇 Main routes WITHOUT the /api prefix
-const mainRoutes = require('./routes');
-app.use('/', mainRoutes);
+// Main routes (items and users)
+const itemRoutes = require('./routes/items');
+const userRoutes = require('./routes/users');
+
+// Mount the routes
+app.use('/items', itemRoutes);
+app.use('/users', userRoutes);
+
+// Root route
+app.get('/', (req, res) => {
+  res.send('✅ API is running');
+});
 
 // Connect to MongoDB and start server
 db.initDb((error) => {

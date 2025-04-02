@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Items API - CSE 341 Project",
-    "description": "RESTful API for managing items using Node.js and MongoDB. Created by Jaydan Valencia for the CSE 341 course project.",
+    "title": "Items and Users API - CSE 341 Project",
+    "description": "RESTful API for managing items and users using Node.js and MongoDB. Created by Jaydan Valencia for the CSE 341 course project.",
     "version": "1.0.0"
   },
   "host": "cse-341-project2-qtpb.onrender.com",
@@ -42,27 +42,21 @@
             "schema": {
               "type": "object",
               "properties": {
-                "productType": { "type": "string", "example": "Beverage" },
-                "productBrand": { "type": "string", "example": "Coca-Cola" },
-                "productName": { "type": "string", "example": "Coca-Cola Zero" },
-                "weightPerUnit": { "type": "string", "example": "355ml" },
-                "pricePerUnit": { "type": "number", "example": 1.25 },
-                "sellingPrice": { "type": "number", "example": 1.99 },
-                "expirationDate": { "type": "string", "example": "2025-12-31" }
+                "productType": { "type": "string" },
+                "productBrand": { "type": "string" },
+                "productName": { "type": "string" },
+                "weightPerUnit": { "type": "string" },
+                "pricePerUnit": { "type": "number" },
+                "sellingPrice": { "type": "number" },
+                "expirationDate": { "type": "string", "format": "date" }
               }
             }
           }
         ],
         "responses": {
-          "201": {
-            "description": "Item created successfully"
-          },
-          "400": {
-            "description": "Validation error"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
+          "201": { "description": "Item created successfully" },
+          "400": { "description": "Validation error" },
+          "500": { "description": "Internal Server Error" }
         }
       }
     },
@@ -71,33 +65,18 @@
         "tags": ["Items"],
         "summary": "Get item by ID",
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
+          { "name": "id", "in": "path", "required": true, "type": "string" }
         ],
-        "produces": ["application/json"],
         "responses": {
-          "200": {
-            "description": "Item found"
-          },
-          "404": {
-            "description": "Item not found"
-          }
+          "200": { "description": "Item found" },
+          "404": { "description": "Item not found" }
         }
       },
       "put": {
         "tags": ["Items"],
         "summary": "Update item by ID",
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
+          { "name": "id", "in": "path", "required": true, "type": "string" },
           {
             "name": "body",
             "in": "body",
@@ -105,47 +84,120 @@
             "schema": {
               "type": "object",
               "properties": {
-                "productType": { "type": "string", "example": "Snack" },
-                "productBrand": { "type": "string", "example": "Lay's" },
-                "productName": { "type": "string", "example": "Lay's BBQ" },
-                "weightPerUnit": { "type": "string", "example": "150g" },
-                "pricePerUnit": { "type": "number", "example": 1.5 },
-                "sellingPrice": { "type": "number", "example": 2.0 },
-                "expirationDate": { "type": "string", "example": "2025-10-10" }
+                "productType": { "type": "string" },
+                "productBrand": { "type": "string" },
+                "productName": { "type": "string" },
+                "weightPerUnit": { "type": "string" },
+                "pricePerUnit": { "type": "number" },
+                "sellingPrice": { "type": "number" },
+                "expirationDate": { "type": "string", "format": "date" }
               }
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Item updated successfully"
-          },
-          "400": {
-            "description": "Validation error"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
+          "204": { "description": "Item updated successfully" },
+          "400": { "description": "Validation error" },
+          "500": { "description": "Internal Server Error" }
         }
       },
       "delete": {
         "tags": ["Items"],
         "summary": "Delete item by ID",
         "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "string" }
+        ],
+        "responses": {
+          "204": { "description": "Item deleted successfully" },
+          "500": { "description": "Internal Server Error" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get all users",
+        "responses": {
+          "200": {
+            "description": "List of users"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create a new user",
+        "parameters": [
           {
-            "name": "id",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "object",
+              "properties": {
+                "firstName": { "type": "string" },
+                "lastName": { "type": "string" },
+                "email": { "type": "string" },
+                "favoriteColor": { "type": "string" },
+                "birthday": { "type": "string", "format": "date" }
+              }
+            }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Item deleted successfully"
-          },
-          "500": {
-            "description": "Internal Server Error"
+          "201": { "description": "User created successfully" },
+          "400": { "description": "Validation error" },
+          "500": { "description": "Internal Server Error" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "string" }
+        ],
+        "responses": {
+          "200": { "description": "User data returned" },
+          "404": { "description": "User not found" }
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "string" },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "firstName": { "type": "string" },
+                "lastName": { "type": "string" },
+                "email": { "type": "string" },
+                "favoriteColor": { "type": "string" },
+                "birthday": { "type": "string", "format": "date" }
+              }
+            }
           }
+        ],
+        "responses": {
+          "204": { "description": "User updated successfully" },
+          "400": { "description": "Validation error" },
+          "500": { "description": "Internal Server Error" }
+        }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Delete user by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "string" }
+        ],
+        "responses": {
+          "204": { "description": "User deleted successfully" },
+          "500": { "description": "Internal Server Error" }
         }
       }
     }
