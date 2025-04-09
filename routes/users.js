@@ -1,13 +1,17 @@
 const express = require('express');
-const router = express.Router();
 const { body } = require('express-validator');
+const router = express.Router();
 const usersController = require('../controllers/usersController');
+const { isAuthenticated } = require('../middleware/authenticate');
 
+// Public GET routes
 router.get('/', usersController.getAll);
 router.get('/:id', usersController.getSingle);
 
+// Protected POST, PUT, DELETE
 router.post(
   '/',
+  isAuthenticated,
   [
     body('firstName').notEmpty().withMessage('First name is required'),
     body('lastName').notEmpty().withMessage('Last name is required'),
@@ -20,6 +24,7 @@ router.post(
 
 router.put(
   '/:id',
+  isAuthenticated,
   [
     body('firstName').notEmpty().withMessage('First name is required'),
     body('lastName').notEmpty().withMessage('Last name is required'),
@@ -30,6 +35,6 @@ router.put(
   usersController.updateUser
 );
 
-router.delete('/:id', usersController.deleteUser);
+router.delete('/:id', isAuthenticated, usersController.deleteUser);
 
 module.exports = router;

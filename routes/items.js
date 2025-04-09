@@ -1,19 +1,17 @@
-// routes/items.js
 const express = require('express');
 const { body } = require('express-validator');
 const router = express.Router();
-
 const itemsController = require('../controllers/itemsController');
+const { isAuthenticated } = require('../middleware/authenticate');
 
-// GET all items
+// Public GET routes
 router.get('/', itemsController.getAll);
-
-// GET a single item by ID
 router.get('/:id', itemsController.getSingle);
 
-// POST a new item
+// Protected POST
 router.post(
   '/',
+  isAuthenticated,
   [
     body('productType').notEmpty().withMessage('Product type is required'),
     body('productBrand').notEmpty().withMessage('Product brand is required'),
@@ -26,9 +24,10 @@ router.post(
   itemsController.createItem
 );
 
-// PUT update an item
+// Protected PUT
 router.put(
   '/:id',
+  isAuthenticated,
   [
     body('productType').notEmpty().withMessage('Product type is required'),
     body('productBrand').notEmpty().withMessage('Product brand is required'),
@@ -41,7 +40,7 @@ router.put(
   itemsController.updateItem
 );
 
-// DELETE an item
-router.delete('/:id', itemsController.deleteItem);
+// Protected DELETE
+router.delete('/:id', isAuthenticated, itemsController.deleteItem);
 
 module.exports = router;
