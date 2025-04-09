@@ -11,4 +11,14 @@ router.use('/items', itemRoutes);
 const userRoutes = require('./users'); 
 router.use('/users', userRoutes);     
 
+router.get('/logout', function(req, res, next) {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.redirect('/'); // Redirect to home page after logout
+  });
+});
+
+
+
+
 module.exports = router;
