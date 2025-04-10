@@ -147,10 +147,6 @@ const userRoutes = require("./routes/users");
 app.use("/items", itemRoutes); // Public GET, protect POST/PUT/DELETE inside
 app.use("/users", userRoutes); // Same
 
-app.get("/", (req, res) => {
-  res.send("✅ API is running");
-});
-
 // MongoDB init
 db.initDb((error) => {
   if (error) {

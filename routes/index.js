@@ -4,23 +4,6 @@ const router = express.Router();
 
 router.use("/", require("./swagger"));
 
-router.get("/", (req, res) => {
-  if (req.session?.user) {
-    return res.send(`
-      <h2>✅ Logged in as ${
-        req.session.user.displayName || req.session.user.username
-      }</h2>
-      <a href="/logout">Logout</a>
-    `);
-  }
-
-  // Si no hay usuario logueado
-  return res.send(`
-    <h2>Welcome to the API</h2>
-    <a href="/login">Login with GitHub</a>
-  `);
-});
-
 router.get("/login", (req, res) => {
   res.redirect("/auth/github");
 });
