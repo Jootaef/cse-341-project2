@@ -8,21 +8,13 @@ const session = require('express-session');
 const passport = require('passport');
 const GitHubStrategy = require('passport-github').Strategy;
 require('dotenv').config();
+const { isAuthenticated } = require('./middleware/authenticate');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Auth middleware (exportable if needed)
-function isAuthenticated(req, res, next) {
-  if (req.session?.user) {
-    return next();
-  }
-  return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-}
 
 // Extended CORS headers for Render
-
-app.use('/', require('./routes'));
 
 app.use(cors());
 app.use((req, res, next) => {
@@ -30,6 +22,11 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
+app.use((req, res, next) => {
+  console.log(`📝 ${new Date().toISOString()} - ${req.method} ${req.url}`);
   next();
 });
 
@@ -59,11 +56,20 @@ passport.use(new GitHubStrategy({
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
+app.get('/', (req, res) => {
+  res.send(
+    req.session.user !== undefined
+      ? `Logged in as ${req.session.user.displayName}`
+      : 'Logged Out'
+  );
+});
+
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/', require('./routes'));
 
 // Login route
 app.get('/login', (req, res) => {
@@ -81,10 +87,19 @@ app.get('/login', (req, res) => {
 app.get('/auth/github', passport.authenticate('github'));
 
 app.get('/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: '/login-failure', session: false }),
+  passport.authenticate('github', { failureRedirect: '/login-failure', session: true }), // Cambia session a true
   (req, res) => {
+    console.log('📣 GitHub callback - User authenticated:', req.user?.username || req.user?.displayName);
+    console.log('📣 isAuthenticated:', req.isAuthenticated());
+    
+    // Asigna el usuario a la sesión
     req.session.user = req.user;
-    req.session.save(() => {
+    
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Error saving session:', err);
+      }
+      console.log('✅ Session saved successfully');
       res.redirect('/login-success');
     });
   }
@@ -103,11 +118,11 @@ app.get('/login-failure', (req, res) => {
   res.send('<h2>❌ Login failed. Please try again.</h2>');
 });
 
-app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/login?loggedOut=true');
-  });
-});
+// app.get('/logout', (req, res) => {
+//   req.session.destroy(() => {
+//     res.redirect('/login?loggedOut=true');
+//   });
+// });
 
 // Routes
 const itemRoutes = require('./routes/items');

@@ -1,50 +1,43 @@
-const express = require('express');
+const router = require('express').Router();
 const passport = require('passport');
-const router = express.Router();
 
 router.use('/', require('./swagger'));
 
-router.get('/', (req, res) => {
-  if (req.session?.user) {
-    res.send(`
-      <h2>✅ Logged in as ${req.session.user.displayName || req.session.user.username}</h2>
-      <a href="/logout">Logout</a>
-    `);
-  } else {
-    res.send(`
-      <h2>Welcome to the API</h2>
-      <a href="/login">Login with GitHub</a>
-    `);
-  }
-});
+router.get('/login', passport.authenticate('github'));
 
-router.get('/login', (req, res) => {
-  res.redirect('/auth/github');
-});
-
-router.get('/auth/github', passport.authenticate('github'));
-
-router.get('/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: '/' }),
+router.get('/github/callback',
+  passport.authenticate('github', { failureRedirect: '/login-failure' }),
   (req, res) => {
     req.session.user = req.user;
     req.session.save(() => {
-      res.redirect('/');
+      res.redirect('/login-success');
     });
   }
 );
 
 router.get('/logout', (req, res) => {
-  req.session.destroy(err => {
+  console.log('📣 Logout requested');
+  
+  // Primero desloguear con passport
+  req.logout((err) => {
     if (err) {
-      return res.status(500).json({ error: 'Failed to log out.' });
+      console.error('❌ Error during logout:', err);
+      return res.status(500).send('Error during logout');
     }
-    res.redirect('/');
+    
+    // Luego destruir la sesión
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('❌ Error destroying session:', err);
+        return res.status(500).send('Error destroying session');
+      }
+      console.log('✅ Logout successful');
+      res.redirect('/');
+    });
   });
 });
 
-// Routes
+router.use('/users', require('./users'));
 router.use('/items', require('./items'));
-router.use('/users', require('./users')); 
 
 module.exports = router;

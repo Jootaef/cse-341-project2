@@ -79,13 +79,18 @@ const updateUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
+  console.log('📣 Delete user requested:', req.params.id);
+  console.log('- Session user:', req.session?.user?.username || req.session?.user?.displayName);
+  
   try {
     const userId = new ObjectId(req.params.id);
     const db = mongodb.getDatabase();
     const result = await db.collection('users').deleteOne({ _id: userId });
     if (result.deletedCount === 0) {
+      console.log('❌ User not found for deletion');
       return res.status(404).json({ message: 'User not found' });
     }
+    console.log('✅ User deleted successfully');
     res.status(204).send();
   } catch (error) {
     console.error('❌ Error in deleteUser:', error);
