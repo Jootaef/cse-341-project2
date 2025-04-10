@@ -5,20 +5,20 @@ const router = express.Router();
 router.use("/", require("./swagger"));
 
 router.get("/", (req, res) => {
-  res.send("API is running.");
   if (req.session?.user) {
-    res.send(`
+    return res.send(`
       <h2>✅ Logged in as ${
         req.session.user.displayName || req.session.user.username
       }</h2>
       <a href="/logout">Logout</a>
     `);
-  } else {
-    res.send(`
-      <h2>Welcome to the API</h2>
-      <a href="/login">Login with GitHub</a>
-    `);
   }
+
+  // Si no hay usuario logueado
+  return res.send(`
+    <h2>Welcome to the API</h2>
+    <a href="/login">Login with GitHub</a>
+  `);
 });
 
 router.get("/login", (req, res) => {
