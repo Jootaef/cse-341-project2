@@ -86,24 +86,24 @@ app.use('/', require('./routes'));
 // GitHub auth
 // app.get('/auth/github', passport.authenticate('github'));
 
-// app.get('/auth/github/callback',
-//   passport.authenticate('github', { failureRedirect: '/login-failure', session: true }), // Cambia session a true
-//   (req, res) => {
-//     console.log('📣 GitHub callback - User authenticated:', req.user?.username || req.user?.displayName);
-//     console.log('📣 isAuthenticated:', req.isAuthenticated());
+app.get('/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: '/login-failure', session: true }), // Cambia session a true
+  (req, res) => {
+    console.log('📣 GitHub callback - User authenticated:', req.user?.username || req.user?.displayName);
+    console.log('📣 isAuthenticated:', req.isAuthenticated());
     
-//     // Asigna el usuario a la sesión
-//     req.session.user = req.user;
+    // Asigna el usuario a la sesión
+    req.session.user = req.user;
     
-//     req.session.save((err) => {
-//       if (err) {
-//         console.error('❌ Error saving session:', err);
-//       }
-//       console.log('✅ Session saved successfully');
-//       res.redirect('/login-success');
-//     });
-//   }
-// );
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Error saving session:', err);
+      }
+      console.log('✅ Session saved successfully');
+      res.redirect('/login-success');
+    });
+  }
+);
 
 app.get('/login-success', (req, res) => {
   const user = req.session.user;

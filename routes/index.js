@@ -5,15 +5,15 @@ router.use('/', require('./swagger'));
 
 router.get('/login', passport.authenticate('github'));
 
-router.get('/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: '/login-failure' }),
-  (req, res) => {
-    req.session.user = req.user;
-    req.session.save(() => {
-      res.redirect('/login-success');
-    });
-  }
-);
+// router.get('/auth/github/callback',
+//   passport.authenticate('github', { failureRedirect: '/login-failure' }),
+//   (req, res) => {
+//     req.session.user = req.user;
+//     req.session.save(() => {
+//       res.redirect('/login-success');
+//     });
+//   }
+// );
 
 router.get('/logout', (req, res) => {
   console.log('📣 Logout requested');
