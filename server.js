@@ -118,11 +118,20 @@ app.get('/login-failure', (req, res) => {
   res.send('<h2>❌ Login failed. Please try again.</h2>');
 });
 
-// app.get('/logout', (req, res) => {
-//   req.session.destroy(() => {
-//     res.redirect('/login?loggedOut=true');
-//   });
-// });
+app.get('/logout', (req, res) => {
+
+  req.logOut((err) => {
+    if (err) {
+      console.error('❌ Error during logout:', err);
+      return res.status(500).send('Error during logout');
+    }
+    console.log('✅ Logout successful');
+  });
+
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
+});
 
 // Routes
 const itemRoutes = require('./routes/items');
