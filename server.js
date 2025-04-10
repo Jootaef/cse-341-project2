@@ -71,39 +71,39 @@ app.use(passport.session());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/', require('./routes'));
 
-// Login route
-app.get('/login', (req, res) => {
-  const loggedOut = req.query.loggedOut === 'true';
-  res.send(`
-    ${loggedOut ? '<p style="color: green;">🔓 You have successfully logged out.</p>' : ''}
-    <h2>🔐 Login with GitHub</h2>
-    <a href="/auth/github">
-      <button style="padding:10px 20px; font-size:16px;">Login with GitHub</button>
-    </a>
-  `);
-});
+// // Login route
+// app.get('/login', (req, res) => {
+//   const loggedOut = req.query.loggedOut === 'true';
+//   res.send(`
+//     ${loggedOut ? '<p style="color: green;">🔓 You have successfully logged out.</p>' : ''}
+//     <h2>🔐 Login with GitHub</h2>
+//     <a href="/auth/github">
+//       <button style="padding:10px 20px; font-size:16px;">Login with GitHub</button>
+//     </a>
+//   `);
+// });
 
 // GitHub auth
-app.get('/auth/github', passport.authenticate('github'));
+// app.get('/auth/github', passport.authenticate('github'));
 
-app.get('/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: '/login-failure', session: true }), // Cambia session a true
-  (req, res) => {
-    console.log('📣 GitHub callback - User authenticated:', req.user?.username || req.user?.displayName);
-    console.log('📣 isAuthenticated:', req.isAuthenticated());
+// app.get('/auth/github/callback',
+//   passport.authenticate('github', { failureRedirect: '/login-failure', session: true }), // Cambia session a true
+//   (req, res) => {
+//     console.log('📣 GitHub callback - User authenticated:', req.user?.username || req.user?.displayName);
+//     console.log('📣 isAuthenticated:', req.isAuthenticated());
     
-    // Asigna el usuario a la sesión
-    req.session.user = req.user;
+//     // Asigna el usuario a la sesión
+//     req.session.user = req.user;
     
-    req.session.save((err) => {
-      if (err) {
-        console.error('❌ Error saving session:', err);
-      }
-      console.log('✅ Session saved successfully');
-      res.redirect('/login-success');
-    });
-  }
-);
+//     req.session.save((err) => {
+//       if (err) {
+//         console.error('❌ Error saving session:', err);
+//       }
+//       console.log('✅ Session saved successfully');
+//       res.redirect('/login-success');
+//     });
+//   }
+// );
 
 app.get('/login-success', (req, res) => {
   const user = req.session.user;
