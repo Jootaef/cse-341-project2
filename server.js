@@ -12,45 +12,47 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Auth middleware
 function isAuthenticated(req, res, next) {
-  if (req.session.user) {
+  if (req.session?.user) {
     return next();
   }
   return res.status(401).json({ message: 'Unauthorized. Please log in.' });
 }
 
+// Session config
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false
+    secure: process.env.NODE_ENV === 'production', 
+    httpOnly: true,
+    sameSite: 'lax'
   }
 }));
 
+// GitHub OAuth strategy
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: "http://localhost:3000/auth/github/callback"
+  callbackURL: process.env.GITHUB_CALLBACK_URL 
 }, (accessToken, refreshToken, profile, done) => {
   return done(null, profile);
 }));
 
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-
-passport.deserializeUser((user, done) => {
-  done(null, user);
-});
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Login UI
 app.get('/login', (req, res) => {
   const loggedOut = req.query.loggedOut === 'true';
   res.send(`
@@ -62,13 +64,11 @@ app.get('/login', (req, res) => {
   `);
 });
 
+// GitHub auth
 app.get('/auth/github', passport.authenticate('github'));
 
 app.get('/auth/github/callback',
-  passport.authenticate('github', {
-    failureRedirect: '/login-failure',
-    session: false
-  }),
+  passport.authenticate('github', { failureRedirect: '/login-failure', session: false }),
   (req, res) => {
     req.session.user = req.user;
     res.redirect('/login-success');
@@ -94,17 +94,18 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// ❗ Import routes (make sure the files and export names are correct)
+// Routes
 const itemRoutes = require('./routes/items');
 const userRoutes = require('./routes/users');
 
-app.use('/items', isAuthenticated, itemRoutes);
-app.use('/users', isAuthenticated, userRoutes);
+app.use('/items', itemRoutes); 
+app.use('/users', userRoutes);
 
 app.get('/', (req, res) => {
   res.send('✅ API is running');
 });
 
+// Start server
 db.initDb((error) => {
   if (error) {
     console.error('❌ Failed to connect to MongoDB:', error);
