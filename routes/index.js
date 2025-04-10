@@ -5,7 +5,7 @@ router.use('/', require('./swagger'));
 
 router.get('/login', passport.authenticate('github'));
 
-router.get('/github/callback',
+router.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login-failure' }),
   (req, res) => {
     req.session.user = req.user;
