@@ -1,72 +1,64 @@
 const express = require("express");
-const cors = require("cors");
 const bodyParser = require("body-parser");
-const swaggerUi = require("swagger-ui-express");
-const swaggerSpec = require("./swagger.json");
-const db = require("./data/database");
 const session = require("express-session");
 const passport = require("passport");
-const GitHubStrategy = require("passport-github").Strategy;
+const GitHubStrategy = require("passport-github2").Strategy;
+const cors = require("cors");
 require("dotenv").config();
-const { isAuthenticated } = require("./middleware/authenticate");
+const mongoDB = require("./db/database");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-// Extended CORS headers for Render
-
-app.use(cors());
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") return res.sendStatus(204);
-  next();
-});
-
-app.use((req, res, next) => {
-  console.log(`📝 ${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
-
-app.use(bodyParser.json());
-
-// Session setup
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "your-secret-key",
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: "lax",
-    },
+// Middleware
+app
+  .use(bodyParser.json())
+  .use(
+    session({
+      secret: "secret",
+      resave: false,
+      saveUninitialized: true,
+    })
+  )
+  .use(passport.initialize())
+  .use(passport.session())
+  .use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Z-Key, Authorization"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "POST, GET, PUT, PATCH, OPTIONS, DELETE"
+    );
+    next();
   })
-);
+  .use(cors({ methods: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"] }))
+  .use("/", require("./routes/index.js"));
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use("/", require("./routes"));
-
-// Passport GitHub strategy
+// Passport GitHub OAuth strategy
 passport.use(
   new GitHubStrategy(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: process.env.GITHUB_CALLBACK_URL,
+      callbackURL: process.env.CALLBACK_URL,
     },
-    (accessToken, refreshToken, profile, done) => {
+    function (accessToken, refreshToken, profile, done) {
       return done(null, profile);
     }
   )
 );
 
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((user, done) => done(null, user));
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
 
+// Simple route to check login status
 app.get("/", (req, res) => {
   res.send(
     req.session.user !== undefined
@@ -75,86 +67,26 @@ app.get("/", (req, res) => {
   );
 });
 
-// Swagger UI
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// GitHub OAuth callback
+app.get(
+  "/github/callback",
+  passport.authenticate("github", {
+    failureRedirect: "/api-docs",
+    session: false,
+  }),
+  (req, res) => {
+    req.session.user = req.user;
+    res.redirect("/");
+  }
+);
 
-// Login route
-// app.get('/login', (req, res) => {
-//   const loggedOut = req.query.loggedOut === 'true';
-//   res.send(`
-//     ${loggedOut ? '<p style="color: green;">🔓 You have successfully logged out.</p>' : ''}
-//     <h2>🔐 Login with GitHub</h2>
-//     <a href="/auth/github">
-//       <button style="padding:10px 20px; font-size:16px;">Login with GitHub</button>
-//     </a>
-//   `);
-// });
-
-// GitHub auth
-// app.get('/auth/github', passport.authenticate('github'));
-
-// app.get('/auth/github/callback',
-//   passport.authenticate('github', { failureRedirect: '/login-failure', session: true }), // Cambia session a true
-//   (req, res) => {
-//     console.log('📣 GitHub callback - User authenticated:', req.user?.username || req.user?.displayName);
-//     console.log('📣 isAuthenticated:', req.isAuthenticated());
-
-//     // Asigna el usuario a la sesión
-//     req.session.user = req.user;
-
-//     req.session.save((err) => {
-//       if (err) {
-//         console.error('❌ Error saving session:', err);
-//       }
-//       console.log('✅ Session saved successfully');
-//       res.redirect('/login-success');
-//     });
-//   }
-// );
-
-app.get("/login-success", (req, res) => {
-  const user = req.session.user;
-  res.send(`
-    <h2>✅ Login successful!</h2>
-    <p>Welcome, ${user?.displayName || user?.username || "user"}!</p>
-    <a href="/logout">Logout</a>
-  `);
-});
-
-app.get("/login-failure", (req, res) => {
-  res.send("<h2>❌ Login failed. Please try again.</h2>");
-});
-
-// app.get('/logout', (req, res) => {
-
-//   req.logOut((err) => {
-//     if (err) {
-//       console.error('❌ Error during logout:', err);
-//       return res.status(500).send('Error during logout');
-//     }
-//     console.log('✅ Logout successful');
-//   });
-
-//   req.session.destroy(() => {
-//     res.redirect('/');
-//   });
-// });
-
-// Routes
-const itemRoutes = require("./routes/items");
-const userRoutes = require("./routes/users");
-
-app.use("/items", itemRoutes); // Public GET, protect POST/PUT/DELETE inside
-app.use("/users", userRoutes); // Same
-
-// MongoDB init
-db.initDb((error) => {
-  if (error) {
-    console.error("❌ Failed to connect to MongoDB:", error);
+// MongoDB init and start server
+mongoDB.initDb((err, mongoDB) => {
+  if (err) {
+    console.log(err);
   } else {
-    app.listen(PORT, () => {
-      console.log("✅ Connected to MongoDB");
-      console.log(`🚀 Server running at http://localhost:${PORT}`);
+    app.listen(port, () => {
+      console.log(`App started on port ${port}`);
     });
   }
 });
