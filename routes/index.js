@@ -3,7 +3,7 @@ const passport = require('passport');
 
 router.use('/', require('./swagger'));
 
-router.get('/login', passport.authenticate('github'));
+// router.get('/login', passport.authenticate('github'));
 
 // router.get('/auth/github/callback',
 //   passport.authenticate('github', { failureRedirect: '/login-failure' }),

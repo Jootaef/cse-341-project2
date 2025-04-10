@@ -71,20 +71,20 @@ app.use(passport.session());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/', require('./routes'));
 
-// // Login route
-// app.get('/login', (req, res) => {
-//   const loggedOut = req.query.loggedOut === 'true';
-//   res.send(`
-//     ${loggedOut ? '<p style="color: green;">🔓 You have successfully logged out.</p>' : ''}
-//     <h2>🔐 Login with GitHub</h2>
-//     <a href="/auth/github">
-//       <button style="padding:10px 20px; font-size:16px;">Login with GitHub</button>
-//     </a>
-//   `);
-// });
+// Login route
+app.get('/login', (req, res) => {
+  const loggedOut = req.query.loggedOut === 'true';
+  res.send(`
+    ${loggedOut ? '<p style="color: green;">🔓 You have successfully logged out.</p>' : ''}
+    <h2>🔐 Login with GitHub</h2>
+    <a href="/auth/github">
+      <button style="padding:10px 20px; font-size:16px;">Login with GitHub</button>
+    </a>
+  `);
+});
 
 // GitHub auth
-// app.get('/auth/github', passport.authenticate('github'));
+app.get('/auth/github', passport.authenticate('github'));
 
 app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login-failure', session: true }), // Cambia session a true
